@@ -8,8 +8,30 @@ public class Pattern {
     private String predShort;
     private int instances;
     private int freq;
+    private String freqTri;
+    
+    public String getFreqTri() {
+		return freqTri;
+	}
+
+
+	public void setFreqTri(String freqTri) {
+		this.freqTri = freqTri;
+	}
+
+
+	private boolean delete;
    
-    public Pattern(Concept subj, String pred, Concept obj){
+    public boolean isDelete() {
+		return delete;
+	}
+
+
+	public void setDelete(boolean delete) {
+		this.delete = delete;
+	}
+
+	public Pattern(Concept subj, String pred, Concept obj){
         this.subj = subj;
         this.pred = pred;
         this.obj = obj;
@@ -17,6 +39,27 @@ public class Pattern {
         instances = 0;
         freq = 0;
         predShort = obtainPredShort(pred);
+        delete = false;
+    }
+	
+	public Pattern(Concept subj, String pred, Concept obj, String freqTri){
+        this.subj = subj;
+        this.pred = pred;
+        this.obj = obj;
+        color = "B";
+        instances = 0;
+        this.freqTri = freqTri;
+        predShort = obtainPredShort(pred);
+        delete = false;
+    }
+	
+	public Pattern(Concept subj, Concept obj){
+        this.subj = subj;
+        this.obj = obj;
+        color = "B";
+        instances = 0;
+        predShort = obtainPredShort(pred);
+        delete = false;
     }
    
     
