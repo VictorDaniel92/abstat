@@ -57,7 +57,6 @@ public class ProcessDatatypeRelationAssertions {
 						String p = splitted[1];
 						String o = splitted[2];
 						String f = splitted[3];
-						// TODO aggiungere frequence a pattern;
 						AKPs[i] = new Pattern(new Concept(s), p, new Concept(o), f);
 					}
 					// creo una copia dell'array di prima
@@ -76,10 +75,8 @@ public class ProcessDatatypeRelationAssertions {
 								checkEqu(AKPs[i].getSubj(), AKPs[j].getSubj(), tmp);
 							} // se le condizioni appena descritte si verificano
 								// cancello la tripla con la frequenza più bassa
-							if (tmp = true) {
-								if (Integer.parseInt(AKPs[i].getFreqTri()) > Integer.parseInt(AKPs2[j].getFreqTri())) {
-									AKPs2[j].setDelete(true);
-								} else {
+							if (tmp == true) {
+								if (Integer.parseInt(AKPs[i].getFreqTri()) < Integer.parseInt(AKPs2[j].getFreqTri())) {
 									AKPs[i].setDelete(true);
 								} // se la frequenza dei pattern è uguale allora
 									// si conta il numero di volte che i
@@ -94,9 +91,7 @@ public class ProcessDatatypeRelationAssertions {
 											count2++;
 										}
 								}
-								if (count1 > count2) {
-									AKPs2[j].setDelete(true);
-								} else {
+								if (count1 < count2) {
 									AKPs[i].setDelete(true);
 								}
 							}
@@ -106,10 +101,8 @@ public class ProcessDatatypeRelationAssertions {
 								checkEqu(AKPs[i].getObj(), AKPs[j].getObj(), tmp);
 							} // se le condizioni appena descritte si verificano
 								// cancello la tripla con la frequenza più bassa
-							if (tmp = true) {
-								if (Integer.parseInt(AKPs[i].getFreqTri()) > Integer.parseInt(AKPs2[j].getFreqTri())) {
-									AKPs2[j].setDelete(true);
-								} else {
+							if (tmp == true) {
+								if (Integer.parseInt(AKPs[i].getFreqTri()) < Integer.parseInt(AKPs2[j].getFreqTri())) {
 									AKPs[i].setDelete(true);
 								} // se la frequenza dei pattern è uguale allora
 									// si conta il numero di volte che i
@@ -124,9 +117,7 @@ public class ProcessDatatypeRelationAssertions {
 											count2++;
 										}
 								}
-								if (count1 > count2) {
-									AKPs2[j].setDelete(true);
-								} else {
+								if (count1 < count2) {
 									AKPs[i].setDelete(true);
 								}
 							}
@@ -178,8 +169,7 @@ public class ProcessDatatypeRelationAssertions {
 						if (concept == EqConcepts[i].getSubj() && concept2 == EqConcepts[i].getObj()
 								|| concept == EqConcepts[i].getObj() && concept2 == EqConcepts[i].getSubj()) {
 							return true;
-						} else
-							return false;
+						}
 					}
 					br.close();
 				}
@@ -189,16 +179,19 @@ public class ProcessDatatypeRelationAssertions {
 		}
 		return false;
 	}
-	
-	public static void stampaSuFile(String nomeFile){
-		try{
+
+	public static void stampaSuFile(String nomeFile) {
+		try {
 			FileOutputStream fos = new FileOutputStream(new File(nomeFile));
 			Set<Pattern> patterns = new HashSet<Pattern>();
-			for (Pattern pattern : patterns)    
-				fos.write( (pattern.getSubj().getURI()+"##"+pattern.getPred()+"##"+pattern.getObj().getURI()+"##"+ pattern.getFreqTri()+"\n").getBytes()  );
-			fos.close();
-		}
-		catch(Exception e){
+			for (Pattern pattern : patterns) {
+				if (pattern.isDelete() == false) {
+					fos.write((pattern.getSubj().getURI() + "##" + pattern.getPred() + "##" + pattern.getObj().getURI()
+							+ "##" + pattern.getFreqTri() + "\n").getBytes());
+				}
+				fos.close();
+			}
+		} catch (Exception e) {
 			System.out.println("Eccezione stampaSuFile");
 		}
 	}
