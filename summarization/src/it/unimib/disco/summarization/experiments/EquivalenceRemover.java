@@ -17,58 +17,33 @@ public class EquivalenceRemover {
 	}
 
 	// leggo il file
-	public static void readTriplesAKPsEq(String AKPsFile) {
+	public static void readTriplesAKPsEq(String aKPsFile) {
 
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(AKPsFile)));
+			BufferedReader br = new BufferedReader(new FileReader(new File(aKPsFile)));
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (!"".equals(line)) {
 					line = line.substring(1, line.length() - 1);
 					String[] stringAKPs = line.split(", ");
-					Pattern[] AKPs = new Pattern[stringAKPs.length];
+					Pattern[] aKPs = new Pattern[stringAKPs.length];
 
 					// creo l'array con le triple
-					for (int i = 0; i < stringAKPs.length; i++) {
-						String[] splitted = stringAKPs[i].split("##");
-						String s = splitted[0];
-						String p = splitted[1];
-						String o = splitted[2];
-						String f = splitted[3];
-						AKPs[i] = new Pattern(new Concept(s), p, new Concept(o), f);
-					}
-					// creo una copia dell'array di prima
-					Pattern[] AKPs2 = new Pattern[AKPs.length];
-					System.arraycopy(AKPs, 0, AKPs2, 0, AKPs.length);
+					Pattern[] aKPs2 = saveTriple(stringAKPs, aKPs);
 
 					// ciclo sui due array per trovare pattern uguali: se trovo
 					// triple che hanno predicato ed oggetto uguali controllo se
 					// il soggetto
 					// è equivalente al soggetto della seconda tripla
-					for (int i = 0; i < AKPs.length; i++) {
-						for (int j = 0; j < AKPs2.length; j++) {
-							// soggetti equivalenti
-							if (AKPs[i].getObj() == AKPs2[j].getObj() && AKPs[i].getPred() == AKPs2[j].getPred()) {
-								tmp = false;
-								checkEqu(AKPs[i].getSubj(), AKPs[j].getSubj(), tmp);
-							} // se le condizioni appena descritte si verificano
-								// cancello la tripla con la frequenza più bassa
-							chooseTriple(stringAKPs, AKPs, AKPs2, i, j);
-							// oggetti equivalenti
-							if (AKPs[i].getSubj() == AKPs2[j].getSubj() && AKPs[i].getPred() == AKPs2[j].getPred()) {
-								tmp = false;
-								checkEqu(AKPs[i].getObj(), AKPs[j].getObj(), tmp);
-							} // se le condizioni appena descritte si verificano
-							chooseTriple(stringAKPs, AKPs, AKPs2, i, j);
-						}
-					} // se il soggetto e l’oggetto sono concetti equivalenti
-						// cancello il pattern
-					for (int i = 0; i < stringAKPs.length; i++) {
-						if (checkEqu(AKPs[i].getSubj(), AKPs[i].getObj(), tmp)) {
-							AKPs[i].setDelete(true);
-						}
-
-					}
+					findEquivalenceTriple(stringAKPs, aKPs, aKPs2); // se il
+																	// soggetto
+																	// e
+																	// l’oggetto
+																	// sono
+																	// concetti
+																	// equivalenti
+					// cancello il pattern
+					findSubjectObjectTriple(stringAKPs, aKPs);
 				}
 			}
 			br.close();
@@ -77,25 +52,68 @@ public class EquivalenceRemover {
 		}
 	}
 
-	private static void chooseTriple(String[] stringAKPs, Pattern[] AKPs, Pattern[] AKPs2, int i, int j) {
+	private static void findSubjectObjectTriple(String[] stringAKPs, Pattern[] aKPs) {
+		for (int i = 0; i < stringAKPs.length; i++) {
+			if (checkEqu(aKPs[i].getSubj(), aKPs[i].getObj(), tmp)) {
+				aKPs[i].setDelete(true);
+			}
+		}
+	}
+
+	private static void findEquivalenceTriple(String[] stringAKPs, Pattern[] aKPs, Pattern[] aKPs2) {
+		for (int i = 0; i < aKPs.length; i++) {
+			for (int j = 0; j < aKPs2.length; j++) {
+				// soggetti equivalenti
+				if (aKPs[i].getObj() == aKPs2[j].getObj() && aKPs[i].getPred() == aKPs2[j].getPred()) {
+					tmp = false;
+					checkEqu(aKPs[i].getSubj(), aKPs[j].getSubj(), tmp);
+				} // se le condizioni appena descritte si verificano
+					// cancello la tripla con la frequenza più bassa
+				chooseTriple(stringAKPs, aKPs, aKPs2, i, j);
+				// oggetti equivalenti
+				if (aKPs[i].getSubj() == aKPs2[j].getSubj() && aKPs[i].getPred() == aKPs2[j].getPred()) {
+					tmp = false;
+					checkEqu(aKPs[i].getObj(), aKPs[j].getObj(), tmp);
+				} // se le condizioni appena descritte si verificano
+				chooseTriple(stringAKPs, aKPs, aKPs2, i, j);
+			}
+		}
+	}
+
+	private static Pattern[] saveTriple(String[] stringAKPs, Pattern[] aKPs) {
+		for (int i = 0; i < stringAKPs.length; i++) {
+			String[] splitted = stringAKPs[i].split("##");
+			String s = splitted[0];
+			String p = splitted[1];
+			String o = splitted[2];
+			String f = splitted[3];
+			aKPs[i] = new Pattern(new Concept(s), p, new Concept(o), f);
+		}
+		// creo una copia dell'array di prima
+		Pattern[] aKPs2 = new Pattern[aKPs.length];
+		System.arraycopy(aKPs, 0, aKPs2, 0, aKPs.length);
+		return aKPs2;
+	}
+
+	private static void chooseTriple(String[] stringAKPs, Pattern[] aKPs, Pattern[] aKPs2, int i, int j) {
 		if (tmp) {
-			if (Integer.parseInt(AKPs[i].getFreqTri()) < Integer.parseInt(AKPs2[j].getFreqTri())) {
-				AKPs[i].setDelete(true);
+			if (Integer.parseInt(aKPs[i].getFreqTri()) < Integer.parseInt(aKPs2[j].getFreqTri())) {
+				aKPs[i].setDelete(true);
 			} // se la frequenza dei pattern è uguale allora
 				// si conta il numero di volte che i
 				// concetti equivalenti compaiono nelle
 				// triple e si cancella la tripla con il
 				// concetto che appare meno volte
-			if (Integer.parseInt(AKPs[i].getFreqTri()) == Integer.parseInt(AKPs2[j].getFreqTri())) {
+			if (Integer.parseInt(aKPs[i].getFreqTri()) == Integer.parseInt(aKPs2[j].getFreqTri())) {
 				for (int z = 0; z < stringAKPs.length; z++)
-					if (AKPs[z].getSubj() == AKPs[i].getSubj()) {
+					if (aKPs[z].getSubj() == aKPs[i].getSubj()) {
 						count1++;
-					} else if (AKPs[z].getSubj() == AKPs2[j].getSubj()) {
+					} else if (aKPs[z].getSubj() == aKPs2[j].getSubj()) {
 						count2++;
 					}
 			}
 			if (count1 < count2) {
-				AKPs[i].setDelete(true);
+				aKPs[i].setDelete(true);
 			}
 		}
 	}
@@ -103,22 +121,23 @@ public class EquivalenceRemover {
 	// metodo ausiliario per il controllo dell'equivalenza: creo un array con
 	// tutte le classi di equivalenza leggendo il file subClassOf.txt
 	public static boolean checkEqu(Concept concept, Concept concept2, boolean tmp) {
-		boolean tmp2 = tmp;
-		String Equivalence = null;
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(Equivalence)))) {
 
+		boolean tmp2 = tmp;
+		String equivalence = null;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(equivalence)))) {
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (!"".equals(line)) {
 					line = line.substring(1, line.length() - 1);
 					String[] stringAKPs = line.split(", ");
-					Pattern[] EqConcepts = new Pattern[stringAKPs.length];
+					Pattern[] eqConcepts = new Pattern[stringAKPs.length];
 
 					for (int i = 0; i < stringAKPs.length; i++) {
 						String[] splitted = stringAKPs[i].split("##");
 						String a = splitted[0];
 						String b = splitted[1];
-						EqConcepts[i] = new Pattern(new Concept(a), new Concept(b));
+						eqConcepts[i] = new Pattern(new Concept(a), new Concept(b));
 					}
 
 					// se il soggetto del primo pattern compare come primo
@@ -129,9 +148,9 @@ public class EquivalenceRemover {
 					// EqConcepts vuol dire che sono equivalenti e quindi
 					// ritorno true
 					// altrimenti falso
-					for (int i = 0; i < EqConcepts.length; i++) {
-						if (concept == EqConcepts[i].getSubj() && concept2 == EqConcepts[i].getObj()
-								|| concept == EqConcepts[i].getObj() && concept2 == EqConcepts[i].getSubj()) {
+					for (int i = 0; i < eqConcepts.length; i++) {
+						if (concept == eqConcepts[i].getSubj() && concept2 == eqConcepts[i].getObj()
+								|| concept == eqConcepts[i].getObj() && concept2 == eqConcepts[i].getSubj()) {
 							tmp2 = true;
 							return tmp2;
 						}
