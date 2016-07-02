@@ -4,156 +4,193 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 public class EquivalenceRemover {
 
-	static boolean tmp = false;
-	static int count1 = 0;
-	static int count2 = 0;
+	public static ArrayList<String> prova = new ArrayList<String>();
+	public static ArrayList<Pattern> AKPS = new ArrayList<Pattern>();
+	public static ArrayList<Pattern> AKPS2 = new ArrayList<Pattern>();
 
-	private EquivalenceRemover() {
-	}
-
-	// leggo il file
 	public static void readTriplesAKPsEq(String aKPsFile) {
 
+		String[] stringAKPs = null;
+
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(aKPsFile)));
+			BufferedReader br = new BufferedReader(
+					new FileReader(
+							new File(
+									"/schema-summaries/data/summaries/system-test/patterns/datatype-akp.txt")));
 			String line;
 			while ((line = br.readLine()) != null) {
-				if (!"".equals(line)) {
-					line = line.substring(1, line.length() - 1);
-					String[] stringAKPs = line.split(", ");
-					Pattern[] aKPs = new Pattern[stringAKPs.length];
-
-					// creo l'array con le triple
-					Pattern[] aKPs2 = saveTriple(stringAKPs, aKPs);
-
-					// ciclo sui due array per trovare pattern uguali: se trovo
-					// triple che hanno predicato ed oggetto uguali controllo se
-					// il soggetto
-					// è equivalente al soggetto della seconda tripla
-					findEquivalenceTriple(stringAKPs, aKPs, aKPs2); // se il
-																	// soggetto
-																	// e
-																	// l’oggetto
-																	// sono
-																	// concetti
-																	// equivalenti
-					// cancello il pattern
-					findSubjectObjectTriple(stringAKPs, aKPs);
+				if (!line.equals("")) {
+					line = line.substring(0, line.length());
+					stringAKPs = line.split("##");
+						String[] splitted = new String[4];
+						splitted[0] = stringAKPs[0];
+						splitted[1] = stringAKPs[1];
+						splitted[2] = stringAKPs[2];
+						splitted[3] = stringAKPs[3];
+						AKPS.add(new Pattern(new Concept(splitted[0]),
+								splitted[1], new Concept(splitted[2]),
+								splitted[3]));
+						AKPS2.add(new Pattern(new Concept(splitted[0]),
+								splitted[1], new Concept(splitted[2]),
+								splitted[3]));
 				}
 			}
 			br.close();
+			for (int u = 0; u < AKPS.size(); u++) {
+				for (int c = 0; c < AKPS2.size(); c++) {
+					if (AKPS.get(u).getObj().getURI()
+							.equals(AKPS2.get(c).getObj().getURI())
+							&& AKPS.get(u).getPred()
+									.equals(AKPS2.get(c).getPred())) {
+						checkEqu(AKPS.get(u).getSubj().getURI(), AKPS2.get(c)
+								.getSubj().getURI(), AKPS.get(u).getFreqTri(),
+								AKPS2.get(c).getFreqTri(), u, c);
+					}
+					if (AKPS.get(u).getSubj().getURI()
+							.equals(AKPS2.get(c).getSubj().getURI())
+							&& AKPS.get(u).getPred()
+									.equals(AKPS2.get(c).getPred())) {
+						checkEqu(AKPS.get(u).getObj().getURI(), AKPS2.get(c)
+								.getObj().getURI(), AKPS.get(u).getFreqTri(),
+								AKPS2.get(c).getFreqTri(), u, c);
+					}
+				}
+			}
+			// TODO vedere se mantenere o meno
+			// findSubjectObjectTriple(stringAKPs, aKPs);
+			stampa(prova);
+		} catch (Exception e) {
+			throw new RuntimeException("Qualcosa non  andato con stampaSuFile "
+					+ e);
+		}
+	}
+
+	private static void findSubjectObjectTriple(String[] stringAKPs,
+			Pattern[] aKPs) {
+
+		boolean tmp = false;
+		System.out.println("sto cercando so triple");
+		for (int i = 0; i < stringAKPs.length - 1; i++) {
+			if (checkEqu(aKPs[i].getSubj(), aKPs[i].getObj(), tmp)) {
+				aKPs[i].setDelete(true);
+				System.out.println("metto delete");
+			}
+		}
+	}
+
+	public static void checkEqu(String concept, String concept2, String freq,
+			String freq2, int index, int index2) {
+
+		boolean tmp2 = false;
+
+		try (BufferedReader br = new BufferedReader(
+				new FileReader(
+						new File(
+								"/schema-summaries/data/summaries/system-test/reports/tmp-data-for-computation/equivalenti.txt")))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (!"".equals(line)) {
+					line = line.substring(0, line.length());
+					String[] stringAKPs = line.split("#######");
+					for (int k = 0; k < stringAKPs.length - 1; k++) {
+						String[] sottoStringa = stringAKPs[k].split("##");
+							String[] equi = new String[2];
+							equi[0] = sottoStringa[0];
+							equi[1] = sottoStringa[1];
+							if ((concept.equals(equi[0]) && concept2
+									.equals(equi[1]))
+									|| (concept.equals(equi[1]) && concept2
+											.equals(equi[0]))) {
+								tmp2 = true;
+							}
+							if (tmp2 == true) {
+								if (Integer.parseInt(freq) < Integer
+										.parseInt(freq2)) {
+									if (!prova.contains(concept2)) {
+										prova.add(concept2);
+									}
+								}
+								if (Integer.parseInt(freq) > Integer
+										.parseInt(freq2)) {
+									if (!prova.contains(concept)) {
+										prova.add(concept);
+									}
+								}
+								if (Integer.parseInt(freq) == Integer
+										.parseInt(freq2)) {
+									conta(concept, concept2);
+								}
+							}
+					}
+				}
+			}
+			br.close();
+
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
 
-	private static void findSubjectObjectTriple(String[] stringAKPs, Pattern[] aKPs) {
-		for (int i = 0; i < stringAKPs.length; i++) {
-			if (checkEqu(aKPs[i].getSubj(), aKPs[i].getObj(), tmp)) {
-				aKPs[i].setDelete(true);
+	public static void conta(String concept, String concept2) {
+
+		int count1 = 0;
+		int count2 = 0;
+		int u = 0;
+
+		for (; u < AKPS.size(); u++) {
+			if (AKPS.get(u).getSubj().getURI().equals(concept)) {
+				count1++;
+			} else if (AKPS.get(u).getSubj().getURI().equals(concept2)) {
+				count2++;
 			}
 		}
-	}
-
-	private static void findEquivalenceTriple(String[] stringAKPs, Pattern[] aKPs, Pattern[] aKPs2) {
-		for (int i = 0; i < aKPs.length; i++) {
-			for (int j = 0; j < aKPs2.length; j++) {
-				// soggetti equivalenti
-				if (aKPs[i].getObj() == aKPs2[j].getObj() && aKPs[i].getPred() == aKPs2[j].getPred()) {
-					tmp = false;
-					checkEqu(aKPs[i].getSubj(), aKPs[j].getSubj(), tmp);
-				} // se le condizioni appena descritte si verificano
-					// cancello la tripla con la frequenza più bassa
-				chooseTriple(stringAKPs, aKPs, aKPs2, i, j);
-				// oggetti equivalenti
-				if (aKPs[i].getSubj() == aKPs2[j].getSubj() && aKPs[i].getPred() == aKPs2[j].getPred()) {
-					tmp = false;
-					checkEqu(aKPs[i].getObj(), aKPs[j].getObj(), tmp);
-				} // se le condizioni appena descritte si verificano
-				chooseTriple(stringAKPs, aKPs, aKPs2, i, j);
+		if (count1 < count2) {
+			if (!prova.contains(concept2)) {
+				prova.add(concept2);
 			}
 		}
-	}
-
-	private static Pattern[] saveTriple(String[] stringAKPs, Pattern[] aKPs) {
-		for (int i = 0; i < stringAKPs.length; i++) {
-			String[] splitted = stringAKPs[i].split("##");
-			String s = splitted[0];
-			String p = splitted[1];
-			String o = splitted[2];
-			String f = splitted[3];
-			aKPs[i] = new Pattern(new Concept(s), p, new Concept(o), f);
-		}
-		// creo una copia dell'array di prima
-		Pattern[] aKPs2 = new Pattern[aKPs.length];
-		System.arraycopy(aKPs, 0, aKPs2, 0, aKPs.length);
-		return aKPs2;
-	}
-
-	private static void chooseTriple(String[] stringAKPs, Pattern[] aKPs, Pattern[] aKPs2, int i, int j) {
-		if (tmp) {
-			if (Integer.parseInt(aKPs[i].getFreqTri()) < Integer.parseInt(aKPs2[j].getFreqTri())) {
-				aKPs[i].setDelete(true);
-			} // se la frequenza dei pattern è uguale allora
-				// si conta il numero di volte che i
-				// concetti equivalenti compaiono nelle
-				// triple e si cancella la tripla con il
-				// concetto che appare meno volte
-			if (Integer.parseInt(aKPs[i].getFreqTri()) == Integer.parseInt(aKPs2[j].getFreqTri())) {
-				for (int z = 0; z < stringAKPs.length; z++)
-					if (aKPs[z].getSubj() == aKPs[i].getSubj()) {
-						count1++;
-					} else if (aKPs[z].getSubj() == aKPs2[j].getSubj()) {
-						count2++;
-					}
-			}
-			if (count1 < count2) {
-				aKPs[i].setDelete(true);
+		if (count1 > count2) {
+			if (!prova.contains(concept)) {
+				prova.add(concept);
+			}		}
+		if (count1 == count2) {
+			if (!prova.contains(concept)) {
+				prova.add(concept);
 			}
 		}
+		count1 = 0;
+		count2 = 0;
 	}
 
-	// metodo ausiliario per il controllo dell'equivalenza: creo un array con
-	// tutte le classi di equivalenza leggendo il file subClassOf.txt
-	public static boolean checkEqu(Concept concept, Concept concept2, boolean tmp) {
+	public static boolean checkEqu(Concept concept, Concept concept2,
+			boolean tmp) {
 
 		boolean tmp2 = tmp;
-		String equivalence = null;
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(equivalence)))) {
+		try (BufferedReader br = new BufferedReader(
+				new FileReader(
+						new File(
+								"/schema-summaries/data/summaries/system-test/reports/tmp-data-for-computation/equivalenti.txt")))) {
+			boolean prova1 = false;
+			boolean prova2 = false;
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (!"".equals(line)) {
-					line = line.substring(1, line.length() - 1);
-					String[] stringAKPs = line.split(", ");
-					Pattern[] eqConcepts = new Pattern[stringAKPs.length];
-
-					for (int i = 0; i < stringAKPs.length; i++) {
-						String[] splitted = stringAKPs[i].split("##");
-						String a = splitted[0];
-						String b = splitted[1];
-						eqConcepts[i] = new Pattern(new Concept(a), new Concept(b));
+					line = line.substring(0, line.length());
+					String[] stringAKPs = line.split("##");
+					for (int i = 0; i < stringAKPs.length - 1; i++) {
+						if (concept.getURI().equals(stringAKPs[i]))
+							prova1 = true;
+						if (concept2.getURI().equals(stringAKPs[i]))
+							prova2 = true;
 					}
-
-					// se il soggetto del primo pattern compare come primo
-					// elemento e il
-					// soggetto del secondo elemento compare come secondo
-					// elemento o
-					// viceversa nell'array
-					// EqConcepts vuol dire che sono equivalenti e quindi
-					// ritorno true
-					// altrimenti falso
-					for (int i = 0; i < eqConcepts.length; i++) {
-						if (concept == eqConcepts[i].getSubj() && concept2 == eqConcepts[i].getObj()
-								|| concept == eqConcepts[i].getObj() && concept2 == eqConcepts[i].getSubj()) {
-							tmp2 = true;
-							return tmp2;
-						}
+					if (prova1 == true && prova2 == true) {
+						tmp2 = true;
+						return tmp2;
 					}
 				}
 			}
@@ -163,19 +200,19 @@ public class EquivalenceRemover {
 		return tmp2;
 	}
 
-	public static void stampaSuFile(String nomeFile) {
+	public static void stampa(ArrayList<String> blaciao) {
 		try {
-			FileOutputStream fos = new FileOutputStream(new File(nomeFile));
-			Set<Pattern> patterns = new HashSet<>();
-			for (Pattern pattern : patterns) {
-				if (!pattern.isDelete()) {
-					fos.write((pattern.getSubj().getURI() + "##" + pattern.getPred() + "##" + pattern.getObj().getURI()
-							+ "##" + pattern.getFreqTri() + "\n").getBytes());
-				}
+			FileOutputStream fos = new FileOutputStream(
+					new File(
+							"/schema-summaries/data/summaries/system-test/patterns/nuovo3.txt"));
+			for (int i = 0; i < blaciao.size(); i++) {
+				fos.write((blaciao.get(i) + "\n").getBytes());
 			}
 			fos.close();
 		} catch (Exception e) {
-			throw new RuntimeException("Qualcosa non è andato con stampaSuFile " + e);
+			throw new RuntimeException("Qualcosa non  andato con stampaSuFile "
+					+ e);
 		}
 	}
+
 }

@@ -44,5 +44,7 @@
 	<classpathentry kind="lib" path="lib/jetty-all-9.2.9.v20150224.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jgit.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/HermiT.jar"/>
+	<classpathentry kind="lib" path="lib/owlapi-distribution-3.4.8.jar"/>
 	<classpathentry kind="output" path="bin/eclipse"/>
 </classpath>

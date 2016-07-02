@@ -36,7 +36,7 @@ public class EqConceptExtractor {
 			List<OntResource> equConc = new ArrayList<OntResource>();
 			
 			String queryString = "PREFIX owl:<" + OWL.getURI() + ">" + 
-								 "SELECT ?obj " +
+								 "SELECT ?subj ?obj " +
 								 "WHERE {" +
 								 "      <" + concept.getURI() + "> owl:equivalentClass ?obj" +
 								 "      }";
@@ -55,20 +55,28 @@ public class EqConceptExtractor {
 			    for ( ; results.hasNext() ; )
 			    {
 			      QuerySolution soln = results.nextSolution() ;
-
+			      
+//			      Resource subj = soln.getResource("subj");
 			      Resource obj = soln.getResource("obj");
 			      String URIObj = obj.getURI();
+			      System.out.println(URIObj);
+//			      String URISubj = subj.getURI();
+			      System.out.println(concept.getURI());
 			      
 			      //Get EquClass all Concept different from the current one
 				  if( URIObj!=null && concept.getURI()!=URIObj ){
 					  
 					  OntResource EquConc = ontologyTempModel.createOntResource(URIObj);
+//					  EquConc = ontologyTempModel.createOntResource(URISubj);
 					  
 					  //Save EquC
 					  if( URIObj!=null ){
 						equConc.add(EquConc);
 						
+						
 						equConcept.add(EquConc.getURI());
+						equConcept.add(concept.getURI());
+						equConcept.add("###");
 						
 						//Count Presence of Class as EquConcept
 						AllConcepts.updateCounter(concept.getURI(), "Equivalent Class");

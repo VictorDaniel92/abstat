@@ -2,6 +2,7 @@ package it.unimib.disco.summarization.export;
 
 import it.unimib.disco.summarization.dataset.OverallObjectRelationsCounting;
 import it.unimib.disco.summarization.dataset.ParallelProcessing;
+import it.unimib.disco.summarization.experiments.EquivalenceRemover;
 
 import java.io.File;
 
@@ -23,5 +24,7 @@ public class ProcessObjectRelationAssertions {
 		
 		
 	    counts.endProcessing();
+	    EquivalenceRemover.readTriplesAKPsEq("object-akp.txt");
+	//	EquivalenceRemover.stampaSuFile("object-akp.txt");
 	}	
 }
