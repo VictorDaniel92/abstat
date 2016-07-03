@@ -9,27 +9,7 @@ public class Pattern {
     private int instances;
     private int freq;
     private String freqTri;
-    
-    public String getFreqTri() {
-		return freqTri;
-	}
-
-
-	public void setFreqTri(String freqTri) {
-		this.freqTri = freqTri;
-	}
-
-
 	private boolean delete;
-   
-    public boolean isDelete() {
-		return delete;
-	}
-
-
-	public void setDelete(boolean delete) {
-		this.delete = delete;
-	}
 
 	public Pattern(Concept subj, String pred, Concept obj){
         this.subj = subj;
@@ -86,6 +66,19 @@ public class Pattern {
 		return arg.substring(index + 1);
 	}
    
+    public String getFreqTri() {
+		return freqTri;
+	}
+	public void setFreqTri(String freqTri) {
+		this.freqTri = freqTri;
+	}
+   
+    public boolean isDelete() {
+		return delete;
+	}
+	public void setDelete(boolean delete) {
+		this.delete = delete;
+	}
     
     public String toString(){
        // return  /*subj.getDepth()+","+ obj.getDepth()+*/+freq+","+instances+"("+subj.getName() +","+ pred+","+ obj.getName()+")"+ color+",";

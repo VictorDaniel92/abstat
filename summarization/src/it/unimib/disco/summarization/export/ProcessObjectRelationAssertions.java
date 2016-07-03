@@ -24,7 +24,6 @@ public class ProcessObjectRelationAssertions {
 		
 		
 	    counts.endProcessing();
-	    EquivalenceRemover.readTriplesAKPsEq("object-akp.txt");
-	//	EquivalenceRemover.stampaSuFile("object-akp.txt");
+	    EquivalenceRemover.readTriplesAKPsEq();
 	}	
 }

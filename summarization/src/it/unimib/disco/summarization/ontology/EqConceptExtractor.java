@@ -56,24 +56,18 @@ public class EqConceptExtractor {
 			    {
 			      QuerySolution soln = results.nextSolution() ;
 			      
-//			      Resource subj = soln.getResource("subj");
 			      Resource obj = soln.getResource("obj");
 			      String URIObj = obj.getURI();
-			      System.out.println(URIObj);
-//			      String URISubj = subj.getURI();
-			      System.out.println(concept.getURI());
 			      
 			      //Get EquClass all Concept different from the current one
 				  if( URIObj!=null && concept.getURI()!=URIObj ){
 					  
 					  OntResource EquConc = ontologyTempModel.createOntResource(URIObj);
-//					  EquConc = ontologyTempModel.createOntResource(URISubj);
 					  
 					  //Save EquC
 					  if( URIObj!=null ){
 						equConc.add(EquConc);
-						
-						
+											
 						equConcept.add(EquConc.getURI());
 						equConcept.add(concept.getURI());
 						equConcept.add("###");
