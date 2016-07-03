@@ -36,7 +36,7 @@ public class EqConceptExtractor {
 			List<OntResource> equConc = new ArrayList<OntResource>();
 			
 			String queryString = "PREFIX owl:<" + OWL.getURI() + ">" + 
-								 "SELECT ?subj ?obj " +
+								 "SELECT ?obj " +
 								 "WHERE {" +
 								 "      <" + concept.getURI() + "> owl:equivalentClass ?obj" +
 								 "      }";

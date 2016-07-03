@@ -16,6 +16,17 @@ public class EquivalenceRemover {
 	private EquivalenceRemover() {
 	}
 
+	/*
+	 * Si apre un buffer in cui si memorizzano gli AKP dal file in input. Si
+	 * Inizializza l'oggetto line che conterrà ad ogni iterazione l'AKP
+	 * successivo. Nell'oggetto stringAKPs si inseriscono le 4 stringhe in
+	 * stringAKPs che contengono soggetto, predicato, oggetto e frequenza
+	 * dell'AKP. Adesso si salva nei parametri globali AKPS e AKPS2 di volta in
+	 * volta l'AKP letto. Chiuso il buffer viene richiamato il metodo
+	 * findPossibleEquivalenceAkp per iniziare a cercare gli AKP che contengono
+	 * concetti equivalenti. Trovati tutti i concetti preferiti si stampano
+	 * usando il metodo stampa.
+	 */
 	public static void readTriplesAKPsEq() {
 
 		String[] stringAKPs = null;
@@ -48,6 +59,13 @@ public class EquivalenceRemover {
 		}
 	}
 
+	/*
+	 * Si cicla su tutte gli AKP per vedere se ce ne sono di AKP che
+	 * rispecchiano i parametri per essere controllati dal resto dell'algoritmo.
+	 * Se si trovano due AKP che hanno predicato ed oggetto uguali fra loro o
+	 * predicato e soggetto uguali fra loro si richiama il metodo checkEqu per
+	 * controllare che il soggetto o l'oggetto rispettivamente siano equivalenti
+	 */
 	private static void findPossibleEquivalenceAkp() {
 		for (int u = 0; u < AKPS.size(); u++) {
 			for (int c = 0; c < AKPS2.size(); c++) {
@@ -75,6 +93,15 @@ public class EquivalenceRemover {
 		}
 	}
 
+	/*
+	 * Si inizializza una variabile locale booleana a false. Si apre un altro
+	 * buffer in cui questa volta saranno salvati tutti i concetti equivalenti
+	 * fra loro. L'oggetto in cui verrano salvati questi concetti sarà line che
+	 * andranno poi inseriti in stringAKPs divisi a due a due. per finire verrà
+	 * chiamato il metodo checkEquWhileReading in cui verrà effettuato il
+	 * controllo fra i due AKP sospetti ed i concetti equivalenti appena
+	 * salvati.
+	 */
 	public static void checkEqu(String concept, String concept2, String freq, String freq2) {
 
 		boolean tmp2 = false;
@@ -96,6 +123,14 @@ public class EquivalenceRemover {
 		}
 	}
 
+	/*
+	 * Si cicla sui concetti per vedere se il soggetto o l'oggetto sospettato di
+	 * essere equivalenti lo è realmente. Dopo aver salvato due concetti in
+	 * relazione di equivalenza alla volta si controlla se i concetti sospettati
+	 * siano nella stessa relazione con i soggetti equivalenti. Se lo sono si
+	 * vede a questo punto quale AKP ha la frequenza maggiore con il metodo
+	 * checkFreq
+	 */
 	private static boolean checkEquWhileReading(String concept, String concept2, String freq, String freq2,
 			boolean tmp2, String[] stringAKPs) {
 		boolean tmp = tmp2;
@@ -113,6 +148,13 @@ public class EquivalenceRemover {
 		return tmp;
 	}
 
+	/*
+	 * Non si controlla altro quale AKP ha la frequenza maggiore. Se uno dei due
+	 * AKP ha la frequenza maggiore dell'altro si aggiunge all'oggetto
+	 * ConcettiEtichettati il concetto che appartiene a quell'AKP. Se le
+	 * frequenze sono identiche si usa il metodo conta per vedere quale dei due
+	 * concetti equivalenti compare più volte negli AKP.
+	 */
 	private static void checkFreq(String concept, String concept2, String freq, String freq2, boolean tmp2) {
 		if (tmp2) {
 			if ((Integer.parseInt(freq) < Integer.parseInt(freq2)) && (!ConcettiEtichettati.contains(concept2))) {
@@ -127,6 +169,14 @@ public class EquivalenceRemover {
 		}
 	}
 
+	/*
+	 * Si inizializzano due contatori prima di tutto che conterranno
+	 * rispettivamente il numero di volte che i due concetti campaiono negli
+	 * AKP. Dopo aver effettuato il conteggio si vede quale concetto appare.
+	 * Come prima si preferisce il concetto che appare più spesso e appena
+	 * individuato si aggiunge akk'oggetto ConcettiEtichettati. In caso di
+	 * pareggio si aggiungono entrambi.
+	 */
 	public static void conta(String concept, String concept2) {
 
 		int count1 = 0;
@@ -182,6 +232,10 @@ public class EquivalenceRemover {
 		return tmp2;
 	}
 
+	/*
+	 * Si apre un buffer di Output per stampare nel file ConcettiPreferiti tutti
+	 * i concetti salvati in ConcettiEtichettati.
+	 */
 	public static void stampa(List<String> concettiPreferiti) {
 		try {
 			FileOutputStream fos = new FileOutputStream(
